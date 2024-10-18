@@ -1,0 +1,20 @@
+{% comment %} {% extends 'base_supplier.html' %} {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Details</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <h1>Supplier Details</h1>
+    <p><strong>ID:</strong> {{ supplier.id }}</p>
+    <p><strong>Name:</strong> {{ supplier.name }}</p>
+    <p><strong>Email:</strong> {{ supplier.email }}</p>
+    <a href="{% url 'supplier-update' supplier.id %}">Edit</a>
+    <a href="{% url 'supplier-delete' supplier.id %}" class="delete-button" data-supplier-name="{{ supplier.name }}">Delete</a>
+    <a href="{% url 'supplier-list' %}">Back to Supplier List</a>
+</body>
+</html>

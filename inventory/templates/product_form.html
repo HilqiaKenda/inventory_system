@@ -1,0 +1,35 @@
+ <!-- templates/product_form.html -->
+{% extends 'base.html' %}
+{% block title %}Product Form{% endblock %}
+
+{% block content %}
+<h1>{{ form_title }}</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Save</button>
+</form>
+
+<a href="{% url 'product-list' %}" class="btn">Cancel</a>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    // Client-side form validation
+    document.getElementById("productForm").addEventListener("submit", function(e) {
+        const name = document.querySelector("[name='name']").value;
+        const price = document.querySelector("[name='price']").value;
+        const quantity = document.querySelector("[name='quantity']").value;
+
+        // Simple validation
+        if (name === "" || price === "" || quantity === "") {
+            alert("All fields are required!");
+            e.preventDefault();
+        } else if (isNaN(price) || isNaN(quantity)) {
+            alert("Price and quantity must be numeric values.");
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

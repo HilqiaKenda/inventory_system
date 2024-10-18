@@ -1,0 +1,128 @@
+{% extends 'base_category.html' %}
+
+{% block title %}Category List{% endblock %}
+
+{% block content %}
+<h2>Categories</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.id }}</td>
+            <td>{{ category.name }}</td>
+            <td>{{ category.description }}</td>
+            <td>
+                {% comment %} <a href="{% url 'category-detail' category.pk %}" class="button">View</a> {% endcomment %}
+                <a href="{% url 'category-update' category.pk %}" class="button">Edit</a>
+                <a href="{% url 'category-delete' category.pk %}" class="button delete-button" data-category-name="{{ category.name }}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No categories available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category List</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+       <style>
+                /* styles.css */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        a {
+            text-decoration: none;
+            color: blue;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const deleteButtons = document.querySelectorAll('.delete-button');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const categoryName = this.dataset.categoryName;
+                    const url = this.getAttribute('href');
+                    const confirmed = confirm(`Are you sure you want to delete the category "${categoryName}"?`);
+                    if (confirmed) {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Category List</h1>
+    <a href="/">Home</a>
+    <a href="{% url 'category-create' %}">Create New Category</a>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>{{ category.id }}</td>
+                    <td>{{ category.name }}</td>
+                    <td>
+                        <a href="{% url 'category-update' category.pk %}">Edit</a>
+                        <a href="{% url 'category-delete' category.pk %}" class="delete-button" data-category-name="{{ category.name }}">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No categories available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html> {% endcomment %}
