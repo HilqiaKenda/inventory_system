@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Supplier, Category
+from .models import Product, Supplier, Category, Order, Customer
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -33,3 +33,18 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
         }
+
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['customer', 'product', 'quantity']
+
+# order = Order.objects.get(id=1)  # Replace with the actual ID you're testing
+# print(order.status)
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['name', 'email']

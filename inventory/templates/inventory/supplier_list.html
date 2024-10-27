@@ -3,29 +3,20 @@
 {% block title %}Supplier List{% endblock %}
 
 {% block content %}
-<h2>Supplier List</h2>
 <table>
     <thead>
         <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Phone</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for supplier in suppliers %}
         <tr>
-            <td>{{ supplier.id }}</td>
             <td>{{ supplier.name }}</td>
             <td>{{ supplier.email }}</td>
             <td>{{ supplier.phone }}</td>
-            <td>
-                <a href="{% url 'supplier-detail' supplier.pk %}" class="button">View</a>
-                <a href="{% url 'supplier-update' supplier.pk %}" class="button">Edit</a>
-                <a href="{% url 'supplier-delete' supplier.pk %}" class="button delete-button" data-supplier-name="{{ supplier.name }}">Delete</a>
-            </td>
         </tr>
         {% empty %}
         <tr>
@@ -35,100 +26,3 @@
     </tbody>
 </table>
 {% endblock %}
-
-
-{% comment %} {% extends 'base_supplier.html' %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supplier List</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <style>
-                /* styles.css */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-
-        a {
-            text-decoration: none;
-            color: blue;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const deleteButtons = document.querySelectorAll('.delete-button');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    const supplierName = this.dataset.supplierName;
-                    const url = this.getAttribute('href');
-                    const confirmed = confirm(`Are you sure you want to delete the supplier "${supplierName}"?`);
-                    if (confirmed) {
-                        window.location.href = url;
-                    }
-                });
-            });
-        });
-    </script>
-</head>
-<body>
-    <h1>Supplier List</h1>
-    <a href="{% url 'supplier-create' %}">Create New Supplier</a>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for supplier in suppliers %}
-                <tr>
-                    <td>{{ supplier.id }}</td>
-                    <td>{{ supplier.name }}</td>
-                    <td>{{ supplier.email }}</td>
-                    <td>
-                        <a href="{% url 'supplier-detail' supplier.pk %}">View</a>
-                        <a href="{% url 'supplier-update' supplier.pk %}">Edit</a>
-                        <a href="{% url 'supplier-delete' supplier.pk %}" class="delete-button" data-supplier-name="{{ supplier.name }}">Delete</a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4">No suppliers available.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html> {% endcomment %}

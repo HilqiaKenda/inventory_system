@@ -190,9 +190,14 @@
         <nav>
             <ul>
                 <li><a href="/">Home</a></li>
-                <li><a href="{% url 'supplier-create' %}">Supplier</a></li>
-                <li><a href="{% url 'category-create' %}">Category</a></li>
-                <li><a href="{% url 'product-create' %}">Product</a></li>
+                <li><a href="{% url 'order-list' %}">Order</a></li>
+                {% comment %} <a href="{% url 'order-form' %}">Create New Order</a> {% endcomment %}
+                <a href="{% url 'order-create' %}">Create New Order</a>
+                {% comment %} <li><a href="{% url 'order-form' %}">Order form</a></li> {% endcomment %}
+                {% comment %} <li><a href="{% url 'customer-form' %}">Customer</a></li> {% endcomment %}
+                <li><a href="{% url 'supplier-list' %}">Supplier</a></li>
+                <li><a href="{% url 'category-list' %}">Category</a></li>
+                <li><a href="{% url 'product-list' %}">Product</a></li>
                 <li style="float: right;"><a href="/admin/">Admin Login</a></li>
             </ul>
         </nav>

@@ -3,56 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Inventory System{% endblock %}</title>
+    <title>{% block title %}Supplier Management{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+
     <style>
+        /* Internal CSS for basic layout and supplier-specific design */
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
         }
-        .navbar {
+
+        header {
             background-color: #333;
             color: white;
-            padding: 10px;
-            margin-bottom: 20px;
+            padding: 15px;
+            text-align: center;
         }
-        .navbar a {
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+        }
+
+        nav ul li {
+            float: left;
+        }
+
+        nav ul li a {
+            display: block;
             color: white;
-            padding: 10px;
+            text-align: center;
+            padding: 14px 20px;
             text-decoration: none;
         }
-        .navbar a:hover {
-            background-color: #555;
+
+        nav ul li a:hover {
+            background-color: #575757;
         }
+
+        .container {
+            height: 65vh;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
+
         table, th, td {
-            border: 1px solid black;
-            padding: 10px;
+            border: 1px solid #ddd;
         }
-        .btn {
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        a.button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px;
+            padding: 10px 20px;
             text-decoration: none;
-            margin-right: 10px;
+            border-radius: 5px;
+        }
+
+        a.button:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            {% comment %} position: relative; {% endcomment %}
+            {% comment %} position: absolute; {% endcomment %}
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 50%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 50%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding-bottom: 1rem
+        }
+
+        button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation bar -->
+    <header>
+        <h1>Product List System</h1>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="{% url 'supplier-list' %}">Supplier List</a></li>
+            <li><a href="{% url 'category-list' %}">Category</a></li>
+            <li><a href="{% url 'product-list' %}">Product</a></li>
+        </ul>
+    </nav>
 
-<div class="navbar">
-    <a href="/">Home</a>
-    <a href="{% url 'product-list' %}">Products</a>
-    <a href="{% url 'supplier-list' %}">Suppliers</a>
-    <a href="{% url 'category-list' %}">Categories</a>
-</div>
+    <!-- Main content area -->
+    <main>
+        <div class="container">
+            {% block content %}
+            <!-- Page-specific content will be inserted here -->
+            {% endblock %}
+        </div>
+    </main>
 
-<div class="content">
-    {% block content %}
-    {% endblock %}
-</div>
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Inventory Management System</p>
+    </footer>
 
+    <!-- External JavaScript -->
+    {% comment %} <script src="{% static 'js/scripts.js' %}"></script> {% endcomment %}
+    
+    <!-- Inline JavaScript for supplier confirmation and interactions -->
+    <script>
+        // Confirmation dialog for delete actions
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', function(event) {
+                const supplierName = this.dataset.supplierName;
+                const confirmed = confirm(`Are you sure you want to delete ${supplierName}?`);
+                if (!confirmed) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -3,27 +3,17 @@
 {% block title %}Product List{% endblock %}
 
 {% block content %}
-<h1>Product List</h1>
-<a href="{% url 'product-create' %}" class="btn">Create New Product</a>
 <table>
     <tr>
-        <th>ID</th>
         <th>Name</th>
         <th>Price</th>
         <th>Quantity</th>
-        <th>Actions</th>
     </tr>
     {% for product in products %}
     <tr>
-        <td>{{ product.id }}</td>
         <td>{{ product.name }}</td>
-        <td>{{ product.price }}</td>
+        <td>${{ product.price }}</td>
         <td>{{ product.quantity }}</td>
-        <td>
-            <a href="{% url 'product-detail' product.id %}">View</a>
-            <a href="{% url 'product-update' product.id %}">Edit</a>
-            <a href="{% url 'product-delete' product.id %}">Delete</a>
-        </td>
     </tr>
     {% endfor %}
 </table>

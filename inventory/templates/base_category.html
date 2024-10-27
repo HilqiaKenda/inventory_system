@@ -110,14 +110,16 @@
 <body>
     <!-- Header -->
     <header>
-        <h1>Category Management</h1>
+        <h1>Category List System</h1>
     </header>
 
     <!-- Navigation Bar -->
     <nav>
         <ul>
+            <li><a href="/">Home</a></li>
             <li><a href="{% url 'category-list' %}">Categories</a></li>
-            <li><a href="{% url 'category-create' %}">Add Category</a></li>
+                <li><a href="{% url 'product-list' %}">Product</a></li>
+                    <li><a href="{% url 'supplier-list' %}">Supplier</a></li>
         </ul>
     </nav>
 
@@ -134,11 +136,6 @@
     <footer>
         <p>&copy; 2024 Category Management System</p>
     </footer>
-
-    <!-- External JS -->
-    {% comment %} <script src="{% static 'js/scripts.js' %}"></script> {% endcomment %}
-
-    <!-- Inline JavaScript for Delete Confirmation -->
     <script>
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', function(event) {

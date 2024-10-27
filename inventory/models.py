@@ -1,15 +1,4 @@
 from django.db import models
-
-# Create your models here.
-# inventory/models.py
-
-# class Supplier(models.Model):
-#     name = models.CharField(max_length=255)
-#     contact = models.CharField(max_length=255, blank=True, null=True)
-
-#     def __str__(self):
-#         return self.name
-
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
@@ -31,8 +20,6 @@ class Supplier(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(max_length=100, default='example@example.com')  # Provide a default value
     phone = models.CharField(max_length=15, default='000-000-0000')
-    # email = models.EmailField(max_length=100)
-    # phone = models.CharField(max_length=15)
 
     def __str__(self):
         return self.name
@@ -45,12 +32,24 @@ class Customer(models.Model):
         return self.name
 
 class Order(models.Model):
+    status_pending = 'P'
+    status_shipped = 'S'
+    status_delivered = 'D'
+    
+    STATUS_CHOICES = [
+        (status_pending, 'Pending'),
+        (status_shipped, 'Shipped'),
+        (status_delivered, 'Delivered')
+    ]
+
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
+    quantity = models.PositiveIntegerField()
     order_date = models.DateTimeField(auto_now_add=True)
-    products = models.ManyToManyField(Product)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=status_pending)
 
     def __str__(self):
-        return f"Order {self.id}"
+        return f'Order {self.id} by {self.customer} - Status: {self.get_status_display()}'
 
 class Inventory(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE)
