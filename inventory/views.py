@@ -3,10 +3,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .forms import ProductForm, SupplierForm, CategoryForm, Order, CustomerForm, OrderForm
 from .models import Product, Supplier, Category, Order, Customer
-
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView
 from django.views.generic import DeleteView, DetailView
+
 # Create your views here.
 
 # inventory/views.py
@@ -40,14 +39,13 @@ def product_delete(request, pk):
         return redirect('product-list')
     return render(request, 'product_confirm_delete.html', {'product': product})
 
-
 # Product views
 def product_create(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('product-list')  # Redirect to the product list page
+            return redirect('product-list')
     else:
         form = ProductForm()
     return render(request, 'product_form.html', {'form': form, 'form_title': 'Create Product'})
@@ -84,7 +82,6 @@ def supplier_update(request, pk):
     else:
         form = SupplierForm(instance=supplier)
     return render(request, 'supplier_form.html', {'form': form, 'form_title': 'Edit Supplier'})
-    # return render(request, 'category-list', {'form': form, 'form_title': 'Edit Supplier'})
 
 def supplier_list(request):
     suppliers = Supplier.objects.all()
@@ -99,7 +96,6 @@ class SupplierDetailView(DetailView):
     model = Supplier
     template_name = 'supplier_detail.html'
     context_object_name = 'supplier'
-
 
 # Category views
 def category_create(request):
@@ -131,7 +127,6 @@ class CategoryDeleteView(DeleteView):
     template_name = 'category_confirm_delete.html'
     success_url = reverse_lazy('category-list')
 
-
 def customer_create(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
@@ -150,8 +145,14 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
-            order = form.save()
-            return redirect('order-detail', order.id)  # Redirect to order details after creation
+            customer_name = form.cleaned_data['customer_name']
+            customer, created = Customer.objects.get_or_create(name=customer_name)
+
+            order = form.save(commit=False)
+            order.customer = customer
+            order.save()
+
+            return redirect('order_list')
     else:
         form = OrderForm()
     return render(request, 'order_form.html', {'form': form})
@@ -163,7 +164,6 @@ def order_detail(request, order_id):
 def order_list(request):
     orders = Order.objects.all()
     return render(request, 'inventory/order_list.html', {'orders': orders})
-
 
 def admin_required(function):
     return user_passes_test(lambda u: u.is_superuser)(function)
@@ -177,8 +177,7 @@ def update_order_status(request, order_id):
         if new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
             order.save()
-            return redirect('order_list')  # Ensure 'order_list' is defined in your URLs
-    
+            return redirect('order_list')
     return render(request, 'inventory/update_order_status.html', {'order': order})
 
 @admin_required
@@ -197,21 +196,3 @@ def update_order_status(request, order_id):
             print("Invalid status received.")
     
     return render(request, 'inventory/update_order_status.html', {'order': order})
-
-
-# # Decorator to check if the user is an admin
-# def admin_required(function):
-#     return user_passes_test(lambda u: u.is_superuser)(function)
-
-# @admin_required
-# def update_order_status(request, order_id):
-#     order = get_object_or_404(Order, id=order_id)
-
-#     if request.method == 'POST':
-#         new_status = request.POST.get('status')
-#         if new_status in dict(Order.STATUS_CHOICES):
-#             order.status = new_status
-#             order.save()
-#             return redirect('order_list')  # Redirect to your order list view
-
-#     return render(request, 'inventory/update_order_status.html', {'order': order})

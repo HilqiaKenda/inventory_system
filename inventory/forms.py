@@ -22,7 +22,7 @@ class SupplierForm(forms.ModelForm):
         fields = ['name', 'email', 'phone'] 
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            # 'contact_info': forms.Textarea(attrs={'class': 'form-control'}),
+            'contact_info': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
 class CategoryForm(forms.ModelForm):
@@ -34,12 +34,12 @@ class CategoryForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
-
-
 class OrderForm(forms.ModelForm):
+    customer_name = forms.CharField(label="Customer Name")
+
     class Meta:
         model = Order
-        fields = ['customer', 'product', 'quantity']
+        fields = ['customer_name', 'product', 'quantity', 'status']
 
 # order = Order.objects.get(id=1)  # Replace with the actual ID you're testing
 # print(order.status)

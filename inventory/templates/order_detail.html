@@ -23,21 +23,3 @@
     </div>
 </body>
 </html>
-
-
-
-
-<!-- templates/inventory/order_detail.html -->
-{% comment %} {% extends 'base.html' %} {% endcomment %}
-{% comment %} 
-{% block title %}Order Details{% endblock %}
-
-{% block content %}
-<div class="container">
-    <h1>Order Details</h1>
-    <p><strong>Customer Name:</strong> {{ order.customer_name }}</p>
-    <p><strong>Product:</strong> {{ order.product }}</p>
-    <p><strong>Quantity:</strong> {{ order.quantity }}</p>
-    <p><strong>Status:</strong> {{ order.status }}</p>
-</div>
-{% endblock %} {% endcomment %}

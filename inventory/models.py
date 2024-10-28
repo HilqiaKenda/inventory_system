@@ -18,7 +18,7 @@ class Product(models.Model):
 
 class Supplier(models.Model):
     name = models.CharField(max_length=255)
-    email = models.EmailField(max_length=100, default='example@example.com')  # Provide a default value
+    email = models.EmailField(max_length=100, default='example@example.com')
     phone = models.CharField(max_length=15, default='000-000-0000')
 
     def __str__(self):

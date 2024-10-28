@@ -161,9 +161,8 @@
     </style>
 </head>
 <body>
-    <!-- Navigation bar -->
     <header>
-        <h1>Supplier List System</h1>
+        <h1>Order List System</h1>
     </header>
     
     <nav>
@@ -175,16 +174,14 @@
         </ul>
     </nav>
 
-    <!-- Main content area -->
     <main>
         <div class="container">
+            <a href="{% url 'order-create' %}" class="button a.button">Order Now</a>
             {% block content %}
-            <!-- Page-specific content will be inserted here -->
             {% endblock %}
         </div>
     </main>
 
-    <!-- Footer -->
     <footer>
         {% comment %} <p>&copy; 2024 Groot Business Management System</p> {% endcomment %}
         <div class="footer-content">
@@ -197,12 +194,7 @@
         </div>
     </footer>
 
-    <!-- External JavaScript -->
-    {% comment %} <script src="{% static 'js/scripts.js' %}"></script> {% endcomment %}
-    
-    <!-- Inline JavaScript for supplier confirmation and interactions -->
     <script>
-        // Confirmation dialog for delete actions
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', function(event) {
                 const supplierName = this.dataset.supplierName;

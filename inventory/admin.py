@@ -3,7 +3,8 @@ from .models import Product, Supplier, Customer, Order, Inventory
 
 # Register your models here.
 # inventory/admin.py
-
+admin.site.site_header = "Groot Business Admin"
+admin.site.index_title = "Business Admin"
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'customer', 'status', 'order_date')
