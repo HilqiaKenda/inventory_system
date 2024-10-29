@@ -21,6 +21,10 @@
         <td>{{ order.get_status_display }}</td>  <!-- Display status -->
         <td>{{ order.order_date }}</td>
     </tr>
+    {% empty %}
+        <tr>
+            <td colspan="6">No order found.</td>
+        </tr>
     {% endfor %}
 </table>
 {% endblock %}

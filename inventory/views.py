@@ -13,7 +13,12 @@ def homepage(request):
     return render(request, 'inventory/homepage.html')
 
 def product_list(request):
-    products = Product.objects.all()
+    query = request.GET.get('product_request')
+        
+    if query:
+        products = Product.objects.filter(name__icontains = query)
+    else:
+        products = Product.objects.all()
     return render(request, 'product_list.html', {'products': products})
 
 def product_detail(request, pk):
@@ -152,7 +157,7 @@ def order_create(request):
             order.customer = customer
             order.save()
 
-            return redirect('order_list')
+            return redirect('order-list')
     else:
         form = OrderForm()
     return render(request, 'order_form.html', {'form': form})
@@ -162,7 +167,14 @@ def order_detail(request, order_id):
     return render(request, 'order_detail.html', {'order': order})
 
 def order_list(request):
-    orders = Order.objects.all()
+    query_order = request.GET.get('order_request')
+    
+    if query_order:
+        orders = Order.objects.filter(id__icontains=query_order)
+        orders = Order.objects.filter(customer__name__icontains=query_order)
+        orders = Order.objects.filter(quantity__icontains=query_order)
+    else:
+        orders = Order.objects.all()
     return render(request, 'inventory/order_list.html', {'orders': orders})
 
 def admin_required(function):

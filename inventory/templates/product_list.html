@@ -2,12 +2,13 @@
 {% extends 'base.html' %}
 {% block title %}Product List{% endblock %}
 
+
 {% block content %}
 <table>
     <tr>
         <th>Name</th>
         <th>Price</th>
-        <th>Quantity in Stock</th>
+        <th>Quantity order</th>
     </tr>
     {% for product in products %}
     <tr>
@@ -15,6 +16,10 @@
         <td>${{ product.price }}</td>
         <td>{{ product.quantity }}</td>
     </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3">No products found.</td>
+        </tr>
     {% endfor %}
 </table>
 {% endblock %}

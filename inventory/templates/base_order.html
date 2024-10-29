@@ -136,16 +136,15 @@
             margin-bottom: 5px;
         }
 
-        input[type="text"],
-        input[type="email"] {
-            width: 50%;
+        input[type="text"]{
+            width: 20%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #28a745;
             border-radius: 4px;
         }
 
-        button {
-            width: 50%;
+        .btn {
+            width: 10%;
             padding: 10px;
             background-color: #28a745;
             color: white;
@@ -155,7 +154,7 @@
             padding-bottom: 1rem
         }
 
-        button:hover {
+        .btn:hover {
             background-color: #218838;
         }
     </style>
@@ -172,6 +171,10 @@
             <li><a href="{% url 'category-list' %}">Category</a></li>
             <li><a href="{% url 'product-list' %}">Product</a></li>
         </ul>
+        <form method = "GET" action ="">
+            <input type="text" name="order_request" placeholder="Search Order...order id, client name, quantity" value={{ request.GET.order_request}}>
+            <button type="submit" class="btn">Search<button>
+        </form>
     </nav>
 
     <main>
