@@ -157,7 +157,7 @@ def order_create(request):
             order.customer = customer
             order.save()
 
-            return redirect('order-list')
+            return redirect('order_list')
     else:
         form = OrderForm()
     return render(request, 'order_form.html', {'form': form})

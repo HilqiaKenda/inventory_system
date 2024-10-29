@@ -7,14 +7,16 @@
 <table>
     <tr>
         <th>Name</th>
-        <th>Price</th>
+        <th>piece</th>
+        <th>Price per piece</th>
         <th>Quantity order</th>
     </tr>
     {% for product in products %}
     <tr>
         <td>{{ product.name }}</td>
+        <td>1 piece</td>
         <td>${{ product.price }}</td>
-        <td>{{ product.quantity }}</td>
+        <td>{{ product.quantity }} pieces orderd</td>
     </tr>
     {% empty %}
         <tr>
