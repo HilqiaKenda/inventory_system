@@ -136,7 +136,9 @@
             margin-bottom: 5px;
         }
 
-        input[type="text"]{
+        input[type="text"],
+        select,
+        input[type="number"]{
             width: 20%;
             padding: 10px;
             border: 1px solid #28a745;
@@ -160,9 +162,8 @@
     </style>
 </head>
 <body>
-    <!-- Navigation bar -->
     <header>
-        <h1>Product List System</h1>
+        <h1>Order List System</h1>
     </header>
     
     <nav>
@@ -173,22 +174,33 @@
             <li><a href="{% url 'product-list' %}">Product</a></li>
         </ul>
         <form method = "GET" action ="">
-            <input type = "text" name = "product_request" placeholder = "Search Products..." value={{ request.GET.product_request}}>
+            <input type="text" name="order_request" placeholder="Search Order...order id, client name, quantity" value={{ request.GET.order_request}}>
             <button type="submit" class="btn">Search<button>
         </form>
     </nav>
 
-    <!-- Main content area -->
     <main>
         <div class="container">
+            <a href="{% url 'order-create' %}" class="button a.button">Order Now</a>
             {% block content %}
-            <!-- Page-specific content will be inserted here -->
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Create Order</title>
+                </head>
+                <body>
+                    <h1>Make Order</h1>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn">Submit Order</button>
+                    </form>
+                </body>
             {% endblock %}
         </div>
     </main>
 
-    <!-- Footer -->
     <footer>
+        {% comment %} <p>&copy; 2024 Groot Business Management System</p> {% endcomment %}
         <div class="footer-content">
             <p>&copy; 2024 Groot Business Management System. All rights reserved.</p>
             <ul>
@@ -199,12 +211,7 @@
         </div>
     </footer>
 
-    <!-- External JavaScript -->
-    {% comment %} <script src="{% static 'js/scripts.js' %}"></script> {% endcomment %}
-    
-    <!-- Inline JavaScript for supplier confirmation and interactions -->
     <script>
-        // Confirmation dialog for delete actions
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', function(event) {
                 const supplierName = this.dataset.supplierName;
