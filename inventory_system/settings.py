@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'inventory',
 ]
 
@@ -53,6 +54,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'inventory_system.urls'
 
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 
 TEMPLATES = [
     {
@@ -83,7 +91,7 @@ DATABASES = {
         'NAME': 'groot_store',
         'HOST': 'localhost',
         'USER': 'root',
-        'PASSWORD': 'Groot',
+        'PASSWORD': 'Groot5km',
         'PORT': '3306',
     }
 }
