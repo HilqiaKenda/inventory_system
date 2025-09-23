@@ -1,0 +1,1 @@
+web: gunicorn track_truck.wsgi
