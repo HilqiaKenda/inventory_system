@@ -1,1 +1,1 @@
-web: gunicorn track_truck.wsgi
+web: gunicorn inventory_system.wsgi
