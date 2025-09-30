@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +23,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-u7ub=at#b!l-y!efeyt)pe8zbzk5+o9bo5*r@$c_&j4$ln1nnf"
+SECRET_KEY = os.getenv("SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://example.com",
+    "https://sub.example.com",
+    "http://localhost:8080",
+    "http://127.0.0.1:9000",
+]
 
 
 # Application definition
@@ -38,11 +49,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
     "inventory",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -85,16 +98,24 @@ WSGI_APPLICATION = "inventory_system.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DB_ENGINE = os.getenv("ENGINE")
+DB_NAME = os.getenv("NAME")
+DB_HOST = os.getenv("HOST")
+DB_USER = os.getenv("USER")
+DB_PASSWORD = os.getenv("PASSWORD")
+DB_PORT = os.getenv("PORT")
+
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'groot_store',
-#         'HOST': 'localhost',
-#         'USER': 'root',
-#         'PASSWORD': 'Groot5km',
-#         'PORT': '3306',
+#     "default": {
+#         "ENGINE": DB_ENGINE,
+#         "NAME": DB_NAME,
+#         "HOST": DB_HOST,
+#         "USER": DB_USER,
+#         "PASSWORD": DB_PASSWORD,
+#         "PORT": DB_PORT,
 #     }
 # }
+
 
 DATABASES = {
     "default": {
