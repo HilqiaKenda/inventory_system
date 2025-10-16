@@ -95,14 +95,21 @@ WSGI_APPLICATION = "inventory_system.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DB_ENGINE = os.getenv("ENGINE")
+DB_NAME = os.getenv("NAME")
+DB_HOST = os.getenv("HOST")
+DB_USER = os.getenv("USER")
+DB_PASSWORD = os.getenv("PASSWORD")
+DB_PORT = os.getenv("PORT")
+
 # DATABASES = {
 #     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": "groot_store",
-#         "HOST": "localhost",
-#         "USER": "root",
-#         "PASSWORD": "Groot5km",
-#         "PORT": "3306",
+#         "ENGINE": DB_ENGINE,
+#         "NAME": DB_NAME,
+#         "HOST": DB_HOST,
+#         "USER": DB_USER,
+#         "PASSWORD": DB_PASSWORD,
+#         "PORT": DB_PORT,
 #     }
 # }
 
@@ -159,11 +166,19 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
 
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
