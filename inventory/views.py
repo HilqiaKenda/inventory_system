@@ -1,210 +1,292 @@
-from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from .forms import ProductForm, SupplierForm, CategoryForm, Order, CustomerForm, OrderForm
-from .models import Product, Supplier, Category, Order, Customer
-from django.urls import reverse_lazy
-from django.views.generic import DeleteView, DetailView
+# views.py
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from rest_framework import generics, status, permissions
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.contrib.auth.models import User
+from .models import (
+    Category, Supplier, Product, UserProfile, Cart, CartItem, Order, OrderItem
+)
+from .serializers import (
+    CategorySerializer, SupplierSerializer, ProductSerializer, ProductListSerializer,
+    UserSerializer, CartSerializer, CartItemSerializer, OrderSerializer,
+    OrderListSerializer, CreateOrderSerializer
+)
+from inventory import models
 
-# Create your views here.
+# Authentication required for all views
+class IsAuthenticated(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
 
-# inventory/views.py
-def homepage(request):
-    return render(request, 'inventory/homepage.html')
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """Custom permission to only allow owners of an object to edit it."""
+    def has_object_permission(self, request, view, obj):
+        # Read permissions for any request
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Write permissions only to the owner
+        return obj.user == request.user
 
-def product_list(request):
-    query = request.GET.get('product_request')
+# Product Views (Public - no auth required for reading)
+class ProductListAPIView(generics.ListAPIView):
+    queryset = Product.objects.filter(is_active=True).select_related('category', 'inventory')
+    serializer_class = ProductListSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', None)
+        category = self.request.query_params.get('category', None)
         
-    if query:
-        products = Product.objects.filter(name__icontains = query)
-    else:
-        products = Product.objects.all()
-    return render(request, 'product_list.html', {'products': products})
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        if category:
+            queryset = queryset.filter(category_id=category)
+            
+        return queryset
 
-def product_detail(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    return render(request, 'product_detail.html', {'product': product})
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.filter(is_active=True).select_related('category', 'inventory')
+    serializer_class = ProductSerializer
 
-def product_create(request):
-    if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            if request.is_ajax():
-                return JsonResponse({'success': True, 'redirect_url': '/products/'})
-            return redirect('product-list')
-    else:
-        form = ProductForm()
-    return render(request, 'product_form.html', {'form': form, 'form_title': 'Create Product'})
+# Category Views (Public)
+class CategoryListAPIView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
-def product_delete(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    if request.method == 'POST':
-        product.delete()
-        return redirect('product-list')
-    return render(request, 'product_confirm_delete.html', {'product': product})
+# User Profile Views
+class UserProfileAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
-# Product views
-def product_create(request):
-    if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('product-list')
-    else:
-        form = ProductForm()
-    return render(request, 'product_form.html', {'form': form, 'form_title': 'Create Product'})
+    def get_object(self):
+        return self.request.user
 
-def product_update(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('product-list')
-    else:
-        form = ProductForm(instance=product)
-    return render(request, 'product_form.html', {'form': form, 'form_title': 'Edit Product'})
+# Cart Views
+class CartAPIView(generics.RetrieveAPIView):
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
 
-# Supplier views
-def supplier_create(request):
-    if request.method == 'POST':
-        form = SupplierForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('supplier-list')
-    else:
-        form = SupplierForm()
-    return render(request, 'supplier_form.html', {'form': form, 'form_title': 'Create Supplier'})
+    def get_object(self):
+        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        return cart
 
-def supplier_update(request, pk):
-    supplier = get_object_or_404(Supplier, pk=pk)
-    if request.method == 'POST':
-        form = SupplierForm(request.POST, instance=supplier)
-        if form.is_valid():
-            form.save()
-            return redirect('supplier-list')
-    else:
-        form = SupplierForm(instance=supplier)
-    return render(request, 'supplier_form.html', {'form': form, 'form_title': 'Edit Supplier'})
+class CartItemListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
 
-def supplier_list(request):
-    suppliers = Supplier.objects.all()
-    return render(request, 'inventory/supplier_list.html', {'suppliers': suppliers})
+    def get_queryset(self):
+        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        return CartItem.objects.filter(cart=cart).select_related('product')
 
-class SupplierDeleteView(DeleteView):
-    model = Supplier
-    template_name = 'supplier_confirm_delete.html'
-    success_url = reverse_lazy('supplier-list')
-
-class SupplierDetailView(DetailView):
-    model = Supplier
-    template_name = 'supplier_detail.html'
-    context_object_name = 'supplier'
-
-# Category views
-def category_create(request):
-    if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('category-list')
-    else:
-        form = CategoryForm()
-    return render(request, 'category_form.html', {'form': form, 'form_title': 'Create Category'})
-
-def category_update(request, pk):
-    category = get_object_or_404(Category, pk=pk)
-    if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
-        if form.is_valid():
-            form.save()
-            return redirect('category-list')
-    else:
-        form = CategoryForm(instance=category)
-    return render(request, 'category_form.html', {'form': form, 'form_title': 'Edit Category'})
-def category_list(request):
-    categories = Category.objects.all()
-    return render(request, 'inventory/category_list.html', {'categories': categories})
-
-class CategoryDeleteView(DeleteView):
-    model = Category
-    template_name = 'category_confirm_delete.html'
-    success_url = reverse_lazy('category-list')
-
-def customer_create(request):
-    if request.method == 'POST':
-        form = CustomerForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('customer-list')  # Adjust this as needed
-    else:
-        form = CustomerForm()
-    return render(request, 'customer_form.html', {'form': form})
-
-def customer_list(request):
-    customers = Customer.objects.all()
-    return render(request, 'customer_list.html', {'customers': customers})
-
-def order_create(request):
-    if request.method == 'POST':
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            customer_name = form.cleaned_data['customer_name']
-            customer, created = Customer.objects.get_or_create(name=customer_name)
-
-            order = form.save(commit=False)
-            order.customer = customer
-            order.save()
-
-            return redirect('order_list')
-    else:
-        form = OrderForm()
-    return render(request, 'order_form.html', {'form': form})
-
-def order_detail(request, order_id):
-    order = Order.objects.get(id=order_id)
-    return render(request, 'order_detail.html', {'order': order})
-
-def order_list(request):
-    query_order = request.GET.get('order_request')
-    
-    if query_order:
-        orders = Order.objects.filter(id__icontains=query_order)
-        orders = Order.objects.filter(customer__name__icontains=query_order)
-        orders = Order.objects.filter(quantity__icontains=query_order)
-    else:
-        orders = Order.objects.all()
-    return render(request, 'inventory/order_list.html', {'orders': orders})
-
-def admin_required(function):
-    return user_passes_test(lambda u: u.is_superuser)(function)
-
-@admin_required
-def update_order_status(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        if new_status in dict(Order.STATUS_CHOICES):
-            order.status = new_status
-            order.save()
-            return redirect('order_list')
-    return render(request, 'inventory/update_order_status.html', {'order': order})
-
-@admin_required
-def update_order_status(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        print(f"Received new status: {new_status} for Order ID: {order_id}")
-        if new_status in dict(Order.STATUS_CHOICES):
-            order.status = new_status
-            order.save()
-            print(f"Updated Order ID: {order_id} to status: {order.status}")
-            return redirect('order_list')
+    def perform_create(self, serializer):
+        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        product = get_object_or_404(Product, id=serializer.validated_data['product_id'])
+        
+        # Check if item already exists in cart
+        existing_item = CartItem.objects.filter(cart=cart, product=product).first()
+        if existing_item:
+            # Update quantity instead of creating new item
+            existing_item.quantity += serializer.validated_data['quantity']
+            existing_item.save()
+            return existing_item
         else:
-            print("Invalid status received.")
+            serializer.save(cart=cart, product=product)
+
+class CartItemUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        cart = get_object_or_404(Cart, user=self.request.user)
+        return CartItem.objects.filter(cart=cart)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def clear_cart(request):
+    """Clear all items from user's cart"""
+    cart = get_object_or_404(Cart, user=request.user)
+    cart.items.all().delete()
+    return Response({'message': 'Cart cleared successfully'}, status=status.HTTP_200_OK)
+
+# Order Views
+class OrderListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related('items__product')
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateOrderSerializer
+        return OrderListSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get user's cart
+        try:
+            cart = Cart.objects.get(user=request.user)
+            if not cart.items.exists():
+                return Response(
+                    {'error': 'Cart is empty'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Cart.DoesNotExist:
+            return Response(
+                {'error': 'Cart not found'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Calculate totals
+        subtotal = cart.total_price
+        shipping_cost = serializer.validated_data.get('shipping_cost', 0)
+        tax_amount = serializer.validated_data.get('tax_amount', 0)
+        total_amount = subtotal + shipping_cost + tax_amount
+
+        # Create order
+        order = Order.objects.create(
+            user=request.user,
+            shipping_address=serializer.validated_data['shipping_address'],
+            shipping_phone=serializer.validated_data['shipping_phone'],
+            subtotal=subtotal,
+            shipping_cost=shipping_cost,
+            tax_amount=tax_amount,
+            total_amount=total_amount,
+            notes=serializer.validated_data.get('notes', '')
+        )
+
+        # Create order items from cart items
+        for cart_item in cart.items.all():
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                unit_price=cart_item.product.price
+            )
+            
+            # Update inventory (reserve items)
+            inventory = cart_item.product.inventory
+            inventory.reserved_quantity += cart_item.quantity
+            inventory.save()
+
+        # Clear cart after successful order creation
+        cart.items.all().delete()
+
+        # Return created order
+        order_serializer = OrderSerializer(order)
+        return Response(order_serializer.data, status=status.HTTP_201_CREATED)
+
+class OrderDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related('items__product')
+
+# Admin-only views for order management
+class AdminOrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.all().select_related('user').prefetch_related('items__product')
+    serializer_class = OrderListSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status_filter = self.request.query_params.get('status', None)
+        user_id = self.request.query_params.get('user', None)
+        
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+            
+        return queryset
+
+class AdminOrderDetailAPIView(generics.RetrieveUpdateAPIView):
+    queryset = Order.objects.all().prefetch_related('items__product')
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+@api_view(['PATCH'])
+@permission_classes([permissions.IsAdminUser])
+def update_order_status(request, pk):
+    """Update order status - Admin only"""
+    order = get_object_or_404(Order, pk=pk)
+    new_status = request.data.get('status')
     
-    return render(request, 'inventory/update_order_status.html', {'order': order})
+    if new_status not in dict(Order.STATUS_CHOICES):
+        return Response(
+            {'error': 'Invalid status'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    old_status = order.status
+    order.status = new_status
+    
+    # Handle status-specific logic
+    if new_status == Order.STATUS_SHIPPED and old_status != Order.STATUS_SHIPPED:
+        from django.utils import timezone
+        order.shipped_date = timezone.now()
+        
+    elif new_status == Order.STATUS_DELIVERED and old_status != Order.STATUS_DELIVERED:
+        from django.utils import timezone
+        order.delivered_date = timezone.now()
+        
+        # Move reserved inventory to sold (reduce actual quantity)
+        for item in order.items.all():
+            inventory = item.product.inventory
+            inventory.quantity -= item.quantity
+            inventory.reserved_quantity -= item.quantity
+            inventory.save()
+            
+    elif new_status == Order.STATUS_CANCELLED and old_status != Order.STATUS_CANCELLED:
+        # Release reserved inventory
+        for item in order.items.all():
+            inventory = item.product.inventory
+            inventory.reserved_quantity -= item.quantity
+            inventory.save()
+    
+    order.save()
+    
+    serializer = OrderSerializer(order)
+    return Response(serializer.data)
+
+# Statistics and Dashboard Views
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_order_stats(request):
+    """Get user's order statistics"""
+    user = request.user
+    orders = Order.objects.filter(user=user)
+    
+    stats = {
+        'total_orders': orders.count(),
+        'pending_orders': orders.filter(status=Order.STATUS_PENDING).count(),
+        'completed_orders': orders.filter(status=Order.STATUS_DELIVERED).count(),
+        'total_spent': sum(order.total_amount for order in orders),
+    }
+    
+    return Response(stats)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+def admin_dashboard_stats(request):
+    """Get admin dashboard statistics"""
+    from django.db.models import Sum, Count
+    
+    stats = {
+        'total_orders': Order.objects.count(),
+        'pending_orders': Order.objects.filter(status=Order.STATUS_PENDING).count(),
+        'total_revenue': Order.objects.aggregate(Sum('total_amount'))['total_amount__sum'] or 0,
+        'total_users': User.objects.count(),
+        'total_products': Product.objects.filter(is_active=True).count(),
+        'low_stock_products': Product.objects.filter(
+            inventory__quantity__lte=models.F('inventory__reorder_level')
+        ).count(),
+    }
+    
+    return Response(stats)
